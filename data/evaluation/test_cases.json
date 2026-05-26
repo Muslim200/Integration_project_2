@@ -1,0 +1,87 @@
+[
+  {
+    "id": "technical_en_dell_power",
+    "language": "English",
+    "category": "Technical",
+    "question": "My Dell XPS does not turn on since yesterday. I am using the original charger, but it does not respond. What should I do?",
+    "expected": "Should use Dell XPS technical context and avoid asking again about the original charger."
+  },
+  {
+    "id": "technical_nl_dell_power",
+    "language": "Dutch",
+    "category": "Technical",
+    "question": "Mijn Dell XPS start niet meer op sinds gisteren. Ik gebruik de originele oplader, maar hij reageert niet. Wat moet ik doen?",
+    "expected": "Should answer in Dutch and translate technical manual information correctly."
+  },
+  {
+    "id": "technical_en_lg_black_screen",
+    "language": "English",
+    "category": "Technical",
+    "question": "My LG OLED TV has a black screen, but I can still hear sound. What should I check first?",
+    "expected": "Should focus on display/input checks and not ask for an on-screen error message."
+  },
+  {
+    "id": "technical_nl_lg_route",
+    "language": "Dutch",
+    "category": "Technical plus return routing",
+    "question": "Mijn LG OLED TV is gisteren geleverd, maar het scherm blijft zwart terwijl ik wel geluid hoor. Moet ik dit als technisch probleem of als retour melden?",
+    "expected": "Should answer the route question first: start as technical issue, then escalate to return/replacement if checks fail."
+  },
+  {
+    "id": "technical_en_hp_slow_fan",
+    "language": "English",
+    "category": "Technical",
+    "question": "My HP Pavilion is very slow after startup and the fan is constantly loud. What should I do?",
+    "expected": "Should detect a technical issue and use HP Pavilion manual information about fan/airflow where useful."
+  },
+  {
+    "id": "technical_nl_hp_wifi",
+    "language": "Dutch",
+    "category": "Technical",
+    "question": "Mijn HP Pavilion verbindt niet meer met wifi, terwijl mijn andere apparaten wel internet hebben. Wat kan ik controleren?",
+    "expected": "Should answer in Dutch and focus on Wi-Fi troubleshooting."
+  },
+  {
+    "id": "technical_en_gopro_freeze",
+    "language": "English",
+    "category": "Technical",
+    "question": "My GoPro Hero freezes after recording for a few minutes. I have to remove the battery to restart it. What can I do?",
+    "expected": "Should use GoPro technical/manual context and give practical steps."
+  },
+  {
+    "id": "refund_en_canon_damaged",
+    "language": "English",
+    "category": "Refund",
+    "question": "I bought a Canon DSLR Camera last week, but it arrived with a damaged lens. I do not want a replacement. I want my money back. What information do you need from me?",
+    "expected": "Tickets should be more useful than manuals because this is a refund process question."
+  },
+  {
+    "id": "refund_nl_canon_damaged",
+    "language": "Dutch",
+    "category": "Refund",
+    "question": "Mijn Canon DSLR Camera is aangekomen met een beschadigde lens. Ik wil geen vervanging maar mijn geld terug. Welke informatie moet ik doorgeven?",
+    "expected": "Should answer in Dutch and focus on refund information, not troubleshooting."
+  },
+  {
+    "id": "delivery_en_missing_package",
+    "language": "English",
+    "category": "Delivery",
+    "question": "My package is marked as delivered, but I never received it. What should I do before contacting support again?",
+    "expected": "Tickets should be more useful than manuals because this is a delivery question."
+  },
+  {
+    "id": "billing_en_double_charge",
+    "language": "English",
+    "category": "Billing",
+    "question": "I was charged twice for my HP Pavilion order, but I only received one confirmation email. How can this be checked?",
+    "expected": "Should focus on billing verification, not product troubleshooting."
+  },
+  {
+    "id": "cancellation_nl_wrong_order",
+    "language": "Dutch",
+    "category": "Cancellation",
+    "question": "Ik heb per ongeluk het verkeerde LG OLED model besteld en wil mijn bestelling annuleren voordat die verzonden wordt. Wat moet ik doen?",
+    "expected": "Should not ask why the customer wants to cancel because the reason is already given."
+  }
+]
+
