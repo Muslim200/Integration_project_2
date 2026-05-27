@@ -9,7 +9,7 @@ from langchain_ollama import OllamaEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from load_data import load_ticket_dataframe, tickets_to_documents
-from settings import CHROMA_DIR, DEFAULT_COLLECTION, DEFAULT_EMBEDDING_MODEL
+from settings import CHROMA_DIR, DEFAULT_COLLECTION, DEFAULT_EMBEDDING_MODEL, OLLAMA_BASE_URL
 
 
 def _batched(items: list, batch_size: int):
@@ -50,7 +50,7 @@ def build_index(
         shutil.rmtree(CHROMA_DIR)
 
     print(f"Connecting to Ollama embedding model: {DEFAULT_EMBEDDING_MODEL}", flush=True)
-    embeddings = OllamaEmbeddings(model=DEFAULT_EMBEDDING_MODEL)
+    embeddings = OllamaEmbeddings(model=DEFAULT_EMBEDDING_MODEL, base_url=OLLAMA_BASE_URL)
 
     vectorstore = Chroma(
         embedding_function=embeddings,
