@@ -13,3 +13,12 @@ data/chroma_manuals/
 data/chroma_bge_db/
 data/manuals/raw/*
 !data/manuals/raw/.gitkeep
+
+# Regenerable evaluation artifacts (produced by src/generate_eval_cases.py,
+# src/label_eval_cases.py and src/eval_routing_accuracy.py). The labeled set
+# and held-out results that docs/eval_routing_accuracy.md cites stay tracked.
+docs/eval_generated_cases.json
+docs/eval_generated_cases_dev.json
+docs/eval_generated_labeled_dev.json
+docs/eval_routing_accuracy_dev.json
+docs/eval_routing_accuracy_dev.md
