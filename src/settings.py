@@ -53,6 +53,13 @@ OLLAMA_BASE_URL = _resolve_ollama_base_url()
 LLM_NUM_CTX = int(os.environ.get("RAG_LLM_NUM_CTX", "8192"))
 LLM_TEMPERATURE = float(os.environ.get("RAG_LLM_TEMPERATURE", "0.0"))
 
+# Ticket-type routing strategy (RAG_ROUTER), picking the Chroma metadata filter:
+# keyword = rule layer (default, deterministic); llm = zero-shot classification;
+# hybrid = keyword then llm. See _route_ticket_type for the dispatch.
+ROUTER_MODE = os.environ.get("RAG_ROUTER", "keyword").strip().lower()
+if ROUTER_MODE not in {"keyword", "llm", "hybrid"}:
+    ROUTER_MODE = "keyword"
+
 # Optional keep_alive override for all Ollama clients. None = Ollama's own
 # default (models stay resident ~5m). Set RAG_OLLAMA_KEEP_ALIVE=0 to unload a
 # model immediately after each call. Useful on small GPUs (e.g. 8 GB) where the

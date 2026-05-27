@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 
 from langchain_chroma import Chroma
@@ -12,6 +13,7 @@ from settings import CHROMA_DIR, DEFAULT_COLLECTION, DEFAULT_EMBEDDING_MODEL, DE
 from settings import CHROMA_MANUALS_DIR, MANUALS_COLLECTION
 from settings import LLM_NUM_CTX, LLM_TEMPERATURE, OLLAMA_BASE_URL
 from settings import OLLAMA_KEEP_ALIVE
+from settings import ROUTER_MODE
 
 
 def _ollama_kwargs() -> dict:
@@ -355,6 +357,64 @@ def _detect_ticket_type(question: str) -> str | None:
     return None
 
 
+# Optional LLM-based routing (selected by settings.ROUTER_MODE). Bucket
+# definitions use plain business terms, not router keywords, and the five labels
+# are exactly the ticket_type values the rest of the pipeline expects.
+_ROUTER_BUCKETS = {
+    "Technical issue": "het product werkt niet, is defect of doet iets onverwachts",
+    "Refund request": "de klant wil betaald geld terugkrijgen",
+    "Billing inquiry": "een vraag of probleem over betaling, bedrag of afrekening",
+    "Cancellation request": "de klant wil een bestelling stopzetten of annuleren",
+    "Product inquiry": "een vraag over de levering van een bestelling of over een product zelf",
+}
+_ROUTER_VALID = set(_ROUTER_BUCKETS)
+_ROUTER_SYSTEM = (
+    "Je bent een classificatiemodel voor de klantenservice van een Belgische "
+    "elektronicawinkel. Deel de klantvraag in precies EEN categorie in:\n"
+    + "\n".join(f'- "{name}": {desc}' for name, desc in _ROUTER_BUCKETS.items())
+    + '\n\nAntwoord uitsluitend als JSON: '
+    '{"categorie": "<exact een van de categorienamen hierboven>"}.'
+)
+
+_router_llm = None
+
+
+def _get_router_llm() -> ChatOllama:
+    """Lazily build a JSON-mode router LLM, reusing the answering model."""
+    global _router_llm
+    if _router_llm is None:
+        _router_llm = ChatOllama(
+            model=DEFAULT_LLM_MODEL,
+            temperature=0.0,
+            num_ctx=LLM_NUM_CTX,
+            format="json",
+            **_ollama_kwargs(),
+        )
+    return _router_llm
+
+
+def _llm_detect_ticket_type(question: str) -> str | None:
+    """Zero-shot classify the question into one ticket_type, or None on failure."""
+    try:
+        content = _get_router_llm().invoke(
+            [("system", _ROUTER_SYSTEM), ("human", question)]
+        ).content
+        category = json.loads(content).get("categorie")
+    except Exception:
+        return None
+    return category if category in _ROUTER_VALID else None
+
+
+def _route_ticket_type(question: str) -> str | None:
+    """Dispatch to the ROUTER_MODE strategy; the keyword rule layer is always the
+    fallback, so an Ollama outage degrades gracefully."""
+    if ROUTER_MODE == "llm":
+        return _llm_detect_ticket_type(question) or _detect_ticket_type(question)
+    if ROUTER_MODE == "hybrid":
+        return _detect_ticket_type(question) or _llm_detect_ticket_type(question)
+    return _detect_ticket_type(question)
+
+
 def _extract_known_facts(question: str, product: str | None, ticket_type: str | None) -> str:
     normalized = _normalize(question)
     facts: list[str] = []
@@ -515,7 +575,7 @@ def answer_question(question: str, k: int = 4, source_mode: str = "hybrid") -> t
 
     search_query = _search_query(question)
     product = _detect_product(question)
-    ticket_type = _detect_ticket_type(question)
+    ticket_type = _route_ticket_type(question)
     known_facts = _extract_known_facts(question, product, ticket_type)
 
     docs = []
