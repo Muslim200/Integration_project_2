@@ -185,9 +185,8 @@ def _search_query(question: str) -> str:
         "verkeerde": "wrong",
         "verzonden": "shipped",
         "geleverd": "delivered",
-        # Delivery/refund phrases must precede the bare "retour" replacement below,
-        # otherwise "retour" -> "return" fires inside "geld retour" first. Likewise
-        # "staat als bezorgd" precedes the bare "bezorgd" -> "delivered".
+        # Multi-word phrases before their substrings: bare "retour"->"return"
+        # would otherwise fire inside "geld retour".
         "staat als bezorgd": "marked as delivered",
         "nooit ontvangen": "never received",
         "niet ontvangen": "not received",
@@ -268,10 +267,8 @@ def _looks_like_technical_issue(question: str) -> bool:
         "wifi",
         "batterij",
         "verbindt niet",
-        # Natural malfunction phrasings: no specific fault token, but a clearly
-        # broken product. These run only after billing/refund/cancel/logistics are
-        # ruled out (step 5 of _detect_ticket_type), so a "betaling werkt niet" or
-        # "pakket kwijt" is already routed before reaching here.
+        # Generic "broken product" phrasings; reached only after billing/refund/
+        # cancel/logistics are ruled out, so "betaling werkt niet" routes earlier.
         "defect",
         "kapot",
         "stukgegaan",
@@ -297,7 +294,6 @@ def _detect_ticket_type(question: str) -> str | None:
             "refund", "reimburse", "money back",
             "terugbetaling", "terugbetalen", "geld terug", "geld retour",
             "restitutie", "terugstorten",
-            # verb variants: customer asking for the amount/money back
             "terugvragen", "geld terugkrijgen", "bedrag terugkrijgen",
             "bedrag terug", "geld weer terug",
         ]
@@ -309,8 +305,7 @@ def _detect_ticket_type(question: str) -> str | None:
             "cancel", "cancellation", "wrong order",
             "annuleren", "annuleer", "annulering", "per ongeluk besteld",
             "afzeggen", "intrekken",
-            # order-stop synonyms; checked before the delivery fallback so
-            # "bestelling stopzetten" is a cancellation, not a delivery question
+            # order-stop synonyms, before the delivery fallback so "stopzetten" reads as cancel
             "stopzetten", "stop zetten", "stopgezet", "afbestellen",
             "annulatie", "bestelling stoppen", "bestelling te stoppen", "order stoppen",
         ]
@@ -325,13 +320,9 @@ def _detect_ticket_type(question: str) -> str | None:
         ]
     ):
         return "Billing inquiry"
-    # Distinctive logistics nouns mean a delivery/tracking question even when the
-    # text also contains a generic "werkt niet"; check them before the technical
-    # heuristic, which would otherwise grab e.g. "trackingnummer werkt niet". These
-    # nouns do not appear in genuine technical-fault questions. NB: "geleverd" and
-    # "bezorgd" are deliberately excluded here -- they co-occur with technical
-    # faults ("gisteren geleverd maar scherm blijft zwart") and stay below the
-    # technical check, in the generic delivery list.
+    # Logistics nouns route to delivery before the technical check (so
+    # "trackingnummer werkt niet" isn't grabbed as technical). "geleverd"/"bezorgd"
+    # are excluded -- they co-occur with faults -- and stay in the delivery list below.
     if any(
         word in normalized
         for word in [
