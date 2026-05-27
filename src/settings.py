@@ -6,8 +6,11 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 RAW_DATA_DIR = ROOT_DIR / "data" / "raw"
 RAW_MANUALS_DIR = ROOT_DIR / "data" / "manuals" / "raw"
 PROCESSED_DATA_DIR = ROOT_DIR / "data" / "processed"
-CHROMA_DIR = ROOT_DIR / "data" / "chroma_db"
-CHROMA_MANUALS_DIR = ROOT_DIR / "data" / "chroma_manuals"
+# Vector-store locations. Both default to the canonical dirs under data/ but are
+# env-overridable so a second embedding model (e.g. bge-m3, 1024-dim) can be
+# indexed side-by-side without clobbering the nomic index for A/B evaluation.
+CHROMA_DIR = Path(os.environ.get("RAG_CHROMA_DIR", str(ROOT_DIR / "data" / "chroma_db")))
+CHROMA_MANUALS_DIR = Path(os.environ.get("RAG_CHROMA_MANUALS_DIR", str(ROOT_DIR / "data" / "chroma_manuals")))
 
 DEFAULT_LLM_MODEL = os.environ.get("RAG_LLM_MODEL", "llama3.1:8b")
 DEFAULT_EMBEDDING_MODEL = os.environ.get("RAG_EMBEDDING_MODEL", "nomic-embed-text")
@@ -49,3 +52,11 @@ OLLAMA_BASE_URL = _resolve_ollama_base_url()
 # ample for the RAG prompt (system + retrieved docs + question + answer).
 LLM_NUM_CTX = int(os.environ.get("RAG_LLM_NUM_CTX", "8192"))
 LLM_TEMPERATURE = float(os.environ.get("RAG_LLM_TEMPERATURE", "0.0"))
+
+# Optional keep_alive override for all Ollama clients. None = Ollama's own
+# default (models stay resident ~5m). Set RAG_OLLAMA_KEEP_ALIVE=0 to unload a
+# model immediately after each call. Useful on small GPUs (e.g. 8 GB) where the
+# LLM and a separate embedding model cannot be resident simultaneously: forcing
+# immediate unload prevents VRAM overcommit (which can corrupt embeddings to NaN
+# under memory pressure). Has no effect on answer content, only on residency.
+OLLAMA_KEEP_ALIVE = os.environ.get("RAG_OLLAMA_KEEP_ALIVE") or None

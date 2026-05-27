@@ -11,11 +11,17 @@ from load_data import load_ticket_dataframe
 from settings import CHROMA_DIR, DEFAULT_COLLECTION, DEFAULT_EMBEDDING_MODEL, DEFAULT_LLM_MODEL
 from settings import CHROMA_MANUALS_DIR, MANUALS_COLLECTION
 from settings import LLM_NUM_CTX, LLM_TEMPERATURE, OLLAMA_BASE_URL
+from settings import OLLAMA_KEEP_ALIVE
 
 
 def _ollama_kwargs() -> dict:
-    """Shared connection kwargs for Ollama clients (base_url when configured)."""
-    return {"base_url": OLLAMA_BASE_URL} if OLLAMA_BASE_URL else {}
+    """Shared connection kwargs for Ollama clients (base_url + keep_alive)."""
+    kwargs: dict = {}
+    if OLLAMA_BASE_URL:
+        kwargs["base_url"] = OLLAMA_BASE_URL
+    if OLLAMA_KEEP_ALIVE is not None:
+        kwargs["keep_alive"] = OLLAMA_KEEP_ALIVE
+    return kwargs
 
 
 def _make_llm() -> ChatOllama:
@@ -177,12 +183,36 @@ def _search_query(question: str) -> str:
         "verkeerde": "wrong",
         "verzonden": "shipped",
         "geleverd": "delivered",
+        # Delivery/refund phrases must precede the bare "retour" replacement below,
+        # otherwise "retour" -> "return" fires inside "geld retour" first. Likewise
+        # "staat als bezorgd" precedes the bare "bezorgd" -> "delivered".
+        "staat als bezorgd": "marked as delivered",
+        "nooit ontvangen": "never received",
+        "niet ontvangen": "not received",
+        "geld retour": "refund",
+        "trackingnummer": "tracking number",
+        "bezorgd": "delivered",
+        "pakket": "package",
+        "zending": "shipment",
         "retour melden": "report return",
         "retour": "return",
         "terug sturen": "return",
         "terugsturen": "return",
         "terugbetaling": "refund",
         "probleem": "problem issue",
+        # Billing vocabulary (specific multi-word phrases before their substrings).
+        "twee keer aangerekend": "charged twice",
+        "dubbel aangerekend": "charged twice",
+        "dubbele afschrijving": "double charge",
+        "dubbel afgeschreven": "double charged",
+        "aangerekend": "charged",
+        "afschrijving": "charge",
+        "afgeschreven": "charged",
+        "gefactureerd": "invoiced",
+        "factuur": "invoice",
+        "betaling": "payment",
+        "afzeggen": "cancel",
+        "intrekken": "cancel",
     }
     query = question.lower()
     for dutch, english in replacements.items():
@@ -234,19 +264,57 @@ def _detect_ticket_type(question: str) -> str | None:
     normalized = _normalize(question)
     if any(
         word in normalized
-        for word in ["refund", "reimburse", "money back", "terugbetaling", "geld terug"]
+        for word in [
+            "refund", "reimburse", "money back",
+            "terugbetaling", "terugbetalen", "geld terug", "geld retour",
+            "restitutie", "terugstorten",
+        ]
     ):
         return "Refund request"
     if any(
         word in normalized
-        for word in ["cancel", "cancellation", "annuleren", "annuleer", "per ongeluk besteld", "wrong order"]
+        for word in [
+            "cancel", "cancellation", "wrong order",
+            "annuleren", "annuleer", "annulering", "per ongeluk besteld",
+            "afzeggen", "intrekken",
+        ]
     ):
         return "Cancellation request"
-    if any(word in normalized for word in ["bill", "billing", "charged", "invoice", "factuur"]):
+    if any(
+        word in normalized
+        for word in [
+            "bill", "billing", "charged", "invoice", "double charge",
+            "factuur", "gefactureerd", "betaling", "betaald", "aangerekend",
+            "afschrijving", "afgeschreven", "dubbel betaald", "twee keer betaald",
+        ]
+    ):
         return "Billing inquiry"
+    # Distinctive logistics nouns mean a delivery/tracking question even when the
+    # text also contains a generic "werkt niet"; check them before the technical
+    # heuristic, which would otherwise grab e.g. "trackingnummer werkt niet". These
+    # nouns do not appear in genuine technical-fault questions. NB: "geleverd" and
+    # "bezorgd" are deliberately excluded here -- they co-occur with technical
+    # faults ("gisteren geleverd maar scherm blijft zwart") and stay below the
+    # technical check, in the generic delivery list.
+    if any(
+        word in normalized
+        for word in [
+            "pakket", "pakketje", "zending", "verzending",
+            "trackingnummer", "tracking", "track and trace",
+            "package", "parcel", "shipment", "tracking number",
+        ]
+    ):
+        return "Product inquiry"
     if _looks_like_technical_issue(question):
         return "Technical issue"
-    if any(word in normalized for word in ["order", "delivery", "shipping", "arrived", "bestelling", "levering"]):
+    if any(
+        word in normalized
+        for word in [
+            "order", "delivery", "shipping", "shipped", "arrived", "delivered", "received",
+            "bestelling", "levering", "bezorgd", "bezorging",
+            "geleverd", "afgeleverd", "ontvangen",
+        ]
+    ):
         return "Product inquiry"
     if "technical" in normalized or "problem" in normalized or "issue" in normalized or "broken" in normalized:
         return "Technical issue"
@@ -282,10 +350,18 @@ def _extract_known_facts(question: str, product: str | None, ticket_type: str | 
         facts.append("Customer is asking whether this should be handled as a technical issue or a return.")
     if any(phrase in normalized for phrase in ["accidental", "per ongeluk", "wrong", "verkeerde"]):
         facts.append("Customer already gave the reason: accidental or wrong order/product.")
-    if any(phrase in normalized for phrase in ["charged twice", "twee keer aangerekend", "dubbel aangerekend"]):
-        facts.append("Customer already stated they were charged twice.")
-    if any(phrase in normalized for phrase in ["marked as delivered", "staat als geleverd"]):
+    if any(
+        phrase in normalized
+        for phrase in [
+            "charged twice", "double charge", "twee keer aangerekend",
+            "dubbel aangerekend", "dubbele afschrijving", "dubbel afgeschreven",
+        ]
+    ):
+        facts.append("Customer already stated there is a duplicate charge or double debit.")
+    if any(phrase in normalized for phrase in ["marked as delivered", "staat als geleverd", "staat als bezorgd"]):
         facts.append("Customer already stated the package is marked as delivered.")
+    if any(phrase in normalized for phrase in ["never received", "nooit ontvangen", "niet ontvangen"]):
+        facts.append("Customer already stated the package was never received.")
 
     if not facts:
         return "No specific known facts extracted. Avoid repeating obvious details from the question."
