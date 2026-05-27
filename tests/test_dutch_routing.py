@@ -47,6 +47,17 @@ DUTCH_ROUTING_CASES = [
     # --- refund / cancellation synonyms (previously misrouted) ---
     ("Ik wil mijn geld retour voor de beschadigde Canon DSLR Camera.", "Refund request"),
     ("Kan ik mijn order voor de LG OLED nog afzeggen voordat hij weg is?", "Cancellation request"),
+    # --- natural malfunction phrasings without a specific fault token ---
+    ("Mijn koptelefoon geeft plots geen geluid meer.", "Technical issue"),
+    ("De wasmachine is gewoon kapot na een week.", "Technical issue"),
+    ("Mijn monitor hapert constant bij het opstarten.", "Technical issue"),
+    # --- order-stop synonyms; cancellation must win over a delivery signal ---
+    ("Ik wil mijn order stopzetten voor hij vertrekt.", "Cancellation request"),
+    ("Kan ik deze aankoop nog afbestellen?", "Cancellation request"),
+    ("Mijn televisie is nog onderweg, kan ik de bestelling toch nog stopzetten?", "Cancellation request"),
+    # --- refund verb variants ---
+    ("Mag ik het betaalde bedrag terugkrijgen?", "Refund request"),
+    ("Hoe kan ik mijn geld terugvragen?", "Refund request"),
 ]
 
 # English controls: routing must be unchanged by the Dutch-coverage additions.

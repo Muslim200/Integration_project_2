@@ -213,6 +213,16 @@ def _search_query(question: str) -> str:
         "betaling": "payment",
         "afzeggen": "cancel",
         "intrekken": "cancel",
+        # order-stop and malfunction/refund verb variants (mirror _detect_ticket_type)
+        "stopzetten": "cancel",
+        "afbestellen": "cancel",
+        "terugvragen": "refund",
+        "defect": "defective",
+        "stukgegaan": "broken",
+        "kapot": "broken",
+        "geen geluid": "no sound",
+        "hapert": "stutters glitchy",
+        "crasht": "crashes",
     }
     query = question.lower()
     for dutch, english in replacements.items():
@@ -256,6 +266,23 @@ def _looks_like_technical_issue(question: str) -> bool:
         "wifi",
         "batterij",
         "verbindt niet",
+        # Natural malfunction phrasings: no specific fault token, but a clearly
+        # broken product. These run only after billing/refund/cancel/logistics are
+        # ruled out (step 5 of _detect_ticket_type), so a "betaling werkt niet" or
+        # "pakket kwijt" is already routed before reaching here.
+        "defect",
+        "kapot",
+        "stukgegaan",
+        "geen geluid",
+        "geen beeld",
+        "doet het niet",
+        "doet niet",
+        "doen niet",
+        "werkt onverwacht",
+        "hapert",
+        "crasht",
+        "beeldkwaliteit",
+        "glitch",
     ]
     return any(phrase in normalized for phrase in technical_phrases)
 
@@ -268,6 +295,9 @@ def _detect_ticket_type(question: str) -> str | None:
             "refund", "reimburse", "money back",
             "terugbetaling", "terugbetalen", "geld terug", "geld retour",
             "restitutie", "terugstorten",
+            # verb variants: customer asking for the amount/money back
+            "terugvragen", "geld terugkrijgen", "bedrag terugkrijgen",
+            "bedrag terug", "geld weer terug",
         ]
     ):
         return "Refund request"
@@ -277,6 +307,10 @@ def _detect_ticket_type(question: str) -> str | None:
             "cancel", "cancellation", "wrong order",
             "annuleren", "annuleer", "annulering", "per ongeluk besteld",
             "afzeggen", "intrekken",
+            # order-stop synonyms; checked before the delivery fallback so
+            # "bestelling stopzetten" is a cancellation, not a delivery question
+            "stopzetten", "stop zetten", "stopgezet", "afbestellen",
+            "annulatie", "bestelling stoppen", "bestelling te stoppen", "order stoppen",
         ]
     ):
         return "Cancellation request"
