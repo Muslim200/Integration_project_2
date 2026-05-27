@@ -10,5 +10,6 @@ data/processed/*
 !data/processed/.gitkeep
 data/chroma_db/
 data/chroma_manuals/
+data/chroma_bge_db/
 data/manuals/raw/*
 !data/manuals/raw/.gitkeep

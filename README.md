@@ -133,7 +133,7 @@ My Canon DSLR Camera is not charging properly. What are the first troubleshootin
 
 We gebruiken lokaal `llama3.1:8b` via Ollama. Dit model is sterk genoeg voor een RAG-PoC, gratis in gebruik en privacyvriendelijker dan een cloud-LLM.
 
-Voor de beste resultaten stellen we demovragen in het Engels, omdat de dataset Engelstalig is. De applicatie kan Nederlandse vragen gedeeltelijk normaliseren, maar Engelse vragen leveren betere retrieval op.
+De dataset is Engelstalig, dus Engelse demovragen leveren van nature de sterkste retrieval op. Voor Nederlandse vragen bevat de applicatie een regelgebaseerde routing- en normalisatielaag die het vraagtype bepaalt, Nederlandse probleemzinnen omzet naar Engelse zoektermen en bekende feiten uit de vraag haalt. Deze laag verbetert realistische Nederlandse vragen zonder de bestaande testcases te verslechteren. De technische werking staat in `docs/technische_documentatie.md` en de afweging in `docs/reflectie.md`.
 
 ## Evaluatie
 
