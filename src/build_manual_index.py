@@ -14,6 +14,7 @@ from settings import (
     CHROMA_MANUALS_DIR,
     DEFAULT_EMBEDDING_MODEL,
     MANUALS_COLLECTION,
+    OLLAMA_BASE_URL,
     RAW_MANUALS_DIR,
 )
 
@@ -96,7 +97,7 @@ def build_manual_index(manuals_dir: Path = RAW_MANUALS_DIR, reset: bool = True) 
         print(f"Resetting existing manual vector database at {CHROMA_MANUALS_DIR}...", flush=True)
         shutil.rmtree(CHROMA_MANUALS_DIR)
 
-    embeddings = OllamaEmbeddings(model=DEFAULT_EMBEDDING_MODEL)
+    embeddings = OllamaEmbeddings(model=DEFAULT_EMBEDDING_MODEL, base_url=OLLAMA_BASE_URL)
     vectorstore = Chroma(
         collection_name=MANUALS_COLLECTION,
         persist_directory=str(CHROMA_MANUALS_DIR),

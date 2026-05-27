@@ -10,6 +10,25 @@ from langchain_ollama import ChatOllama, OllamaEmbeddings
 from load_data import load_ticket_dataframe
 from settings import CHROMA_DIR, DEFAULT_COLLECTION, DEFAULT_EMBEDDING_MODEL, DEFAULT_LLM_MODEL
 from settings import CHROMA_MANUALS_DIR, MANUALS_COLLECTION
+from settings import LLM_NUM_CTX, LLM_TEMPERATURE, OLLAMA_BASE_URL
+
+
+def _ollama_kwargs() -> dict:
+    """Shared connection kwargs for Ollama clients (base_url when configured)."""
+    return {"base_url": OLLAMA_BASE_URL} if OLLAMA_BASE_URL else {}
+
+
+def _make_llm() -> ChatOllama:
+    return ChatOllama(
+        model=DEFAULT_LLM_MODEL,
+        temperature=LLM_TEMPERATURE,
+        num_ctx=LLM_NUM_CTX,
+        **_ollama_kwargs(),
+    )
+
+
+def _make_embeddings() -> OllamaEmbeddings:
+    return OllamaEmbeddings(model=DEFAULT_EMBEDDING_MODEL, **_ollama_kwargs())
 
 
 REQUEST_GUIDANCE = {
@@ -213,7 +232,10 @@ def _looks_like_technical_issue(question: str) -> bool:
 
 def _detect_ticket_type(question: str) -> str | None:
     normalized = _normalize(question)
-    if any(word in normalized for word in ["refund", "reimburse", "money back", "terugbetaling"]):
+    if any(
+        word in normalized
+        for word in ["refund", "reimburse", "money back", "terugbetaling", "geld terug"]
+    ):
         return "Refund request"
     if any(
         word in normalized
@@ -351,7 +373,7 @@ def _retrieve_manual_docs(
     if not force and ticket_type != "Technical issue" and not (product and _looks_like_technical_issue(search_query)):
         return []
 
-    embeddings = OllamaEmbeddings(model=DEFAULT_EMBEDDING_MODEL)
+    embeddings = _make_embeddings()
     manual_store = Chroma(
         collection_name=MANUALS_COLLECTION,
         persist_directory=str(CHROMA_MANUALS_DIR),
@@ -374,7 +396,7 @@ def answer_question(question: str, k: int = 4, source_mode: str = "hybrid") -> t
             "No vector database found. Run `python src/build_index.py` first."
         )
 
-    embeddings = OllamaEmbeddings(model=DEFAULT_EMBEDDING_MODEL)
+    embeddings = _make_embeddings()
     vectorstore = Chroma(
         collection_name=DEFAULT_COLLECTION,
         persist_directory=str(CHROMA_DIR),
@@ -401,7 +423,7 @@ def answer_question(question: str, k: int = 4, source_mode: str = "hybrid") -> t
     ticket_context = _format_docs(docs)
     manual_context = _format_manual_docs(manual_docs)
 
-    llm = ChatOllama(model=DEFAULT_LLM_MODEL, temperature=0.0)
+    llm = _make_llm()
     chain = PROMPT | llm | StrOutputParser()
     answer = chain.invoke(
         {
