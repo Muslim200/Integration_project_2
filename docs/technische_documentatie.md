@@ -34,6 +34,24 @@ Voor de brede demo indexeren we alle tickets, zodat het systeem meerdere vraagty
 
 De normalisatie past de vervangingen na elkaar toe, dus de volgorde is belangrijk: `geld retour` wordt eerst naar `refund` omgezet voordat een losse `retour`-regel zou kunnen vuren. Deze laag is vastgelegd met regressietests in `tests/test_dutch_routing.py`.
 
+## Optionele LLM-routing
+
+Naast de regelgebaseerde routing kan het vraagtype ook door het lokale taalmodel bepaald worden. De omgevingsvariabele `RAG_ROUTER` kiest de strategie:
+
+- `keyword` (standaard): alleen de regelgebaseerde laag hierboven.
+- `llm`: het lokale model (`llama3.1:8b`) deelt de vraag zero-shot in een van de vijf ticket-types in; faalt dat of geeft het een ongeldig antwoord, dan valt het systeem terug op de regelgebaseerde laag.
+- `hybrid`: eerst de regels, en alleen als die niets herkennen het LLM.
+
+De classificatie gebruikt een aparte JSON-prompt (`format="json"`, temperatuur 0) met neutrale categorieomschrijvingen, los van de antwoordprompt. De keuze tussen de strategieen staat in `_route_ticket_type`; de regelgebaseerde laag blijft in elke modus de terugval, zodat een uitval van Ollama de routing niet breekt.
+
+`keyword` blijft bewust de standaard:
+
+- **Determinisme:** dezelfde vraag levert altijd dezelfde route op, wat reproduceerbare evaluatie en regressietests mogelijk maakt.
+- **Geen extra modelcall:** de regels draaien lokaal zonder LLM-aanroep, dus zonder extra latency of geheugengebruik per vraag.
+- **Terugval:** is het LLM niet bereikbaar of geeft het ongeldige JSON terug, dan degradeert het systeem netjes naar de regels.
+
+In een interne vergelijking op dezelfde onafhankelijk gelabelde, vastgehouden set deelde de LLM-routing duidelijk meer vragen correct in dan de regels (ongeveer 94% tegenover 67% op de overeenstemmende set). Dat cijfer is indicatief: een taalmodel beoordeelt hier vragen die een ander taalmodel heeft gelabeld, dus de absolute marge moet voorzichtig gelezen worden. De reproduceerbare, ingecheckte meting van de regelgebaseerde routing staat in `docs/eval_routing_accuracy.md`.
+
 ## Tweede databron: producthandleidingen
 
 De uitgebreide versie gebruikt naast historische supporttickets ook producthandleidingen als kennisbron.

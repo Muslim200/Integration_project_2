@@ -30,6 +30,8 @@ Om de winst objectief en zonder eigen oordeel te meten, hebben we de testvragen 
 
 De absolute score blijft beperkt: de regelgebaseerde laag herkent nog niet elke Nederlandse formulering, en de testvragen zijn door modellen bedacht en niet afkomstig van echte Belgische klanten. De meting toont vooral dat de uitbreiding netto vooruitgang geeft zonder achteruitgang, niet dat het probleem volledig is opgelost. De volledige cijfers en de methode staan in `docs/eval_routing_accuracy.md`.
 
+Naast de regelgebaseerde routing bevat de proof-of-concept een optionele LLM-routing (omgevingsvariabele `RAG_ROUTER=llm` of `hybrid`), waarbij het lokale model het vraagtype zelf classificeert. In een interne vergelijking op dezelfde vastgehouden set koos die variant nog vaker de juiste categorie (rond 94% tegenover 67% voor de regels), maar dat cijfer is indicatief omdat een taalmodel hier vragen beoordeelt die een ander taalmodel heeft gelabeld. De regelgebaseerde routing blijft bewust de standaard: ze is deterministisch, vraagt geen extra modelcall per vraag en dient als terugval wanneer het LLM niet bereikbaar is. De LLM-routing is dus een opt-in verbetering en niet de basis.
+
 Nederlandse vragen blijven belangrijk voor de evaluatie, omdat Expertum in een Belgische context werkt. Daarom bevat de evaluatieset zowel Engelse als Nederlandse testcases.
 
 ## Verbeteringen
