@@ -1,0 +1,74 @@
+{
+  "tag": "dev",
+  "source": "eval_generated_labeled_dev.json",
+  "refs": {
+    "before": "eb3c12f^",
+    "pr2": "eb3c12f",
+    "v2": "working-tree"
+  },
+  "total_cases": 79,
+  "labeled_cases": 79,
+  "agreed_cases": 49,
+  "full_set_accuracy": {
+    "before": [
+      21,
+      79
+    ],
+    "pr2": [
+      29,
+      79
+    ],
+    "v2": [
+      37,
+      79
+    ]
+  },
+  "agreed_set_accuracy": {
+    "before": [
+      16,
+      49
+    ],
+    "pr2": [
+      21,
+      49
+    ],
+    "v2": [
+      31,
+      49
+    ]
+  },
+  "per_bucket_agreed": {
+    "Technical issue": {
+      "n": 11,
+      "before": 6,
+      "pr2": 6,
+      "v2": 10
+    },
+    "Refund request": {
+      "n": 9,
+      "before": 3,
+      "pr2": 3,
+      "v2": 4
+    },
+    "Billing inquiry": {
+      "n": 10,
+      "before": 2,
+      "pr2": 5,
+      "v2": 5
+    },
+    "Cancellation request": {
+      "n": 11,
+      "before": 3,
+      "pr2": 3,
+      "v2": 8
+    },
+    "Product inquiry": {
+      "n": 8,
+      "before": 2,
+      "pr2": 4,
+      "v2": 4
+    }
+  },
+  "v2_vs_before_moved_toward_truth": 15,
+  "v2_vs_before_moved_away_from_truth": 0
+}

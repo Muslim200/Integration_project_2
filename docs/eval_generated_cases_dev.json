@@ -1,0 +1,476 @@
+[
+  {
+    "id": "gen_000",
+    "question": "Mijn nieuwe Samsung Galaxy S23 werkt niet goed, de camera zit vol glitches.",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Technical issue"
+  },
+  {
+    "id": "gen_001",
+    "question": "De Apple AirPods Pro die ik heb gekocht doen niet goed met het geluid, er is veel echo.",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Technical issue"
+  },
+  {
+    "id": "gen_002",
+    "question": "De Philips TV die ik heb gekregen werkt niet meer, de scherm is zwart en er is geen geluid.",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Technical issue"
+  },
+  {
+    "id": "gen_003",
+    "question": "Mijn Sony Bravia 4K werkt onverwacht, de beeldkwaliteit is plotseling verkeerd.",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Technical issue"
+  },
+  {
+    "id": "gen_004",
+    "question": "De Xiaomi Mi Band 7 werkt niet goed, de stroom gaat plotseling verloren.",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Technical issue"
+  },
+  {
+    "id": "gen_005",
+    "question": "De Nintendo Switch die ik heb gekocht doet iets onverwachts, de controller werkt niet meer.",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Technical issue"
+  },
+  {
+    "id": "gen_006",
+    "question": "Ik wil mijn aankoop teruggesturen en het geld terugkrijgen, wat moet ik doen?",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Refund request"
+  },
+  {
+    "id": "gen_007",
+    "question": "Ik heb mijn laptop al gekregen, kan ik het bedrag toch weer terugvragen?",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Refund request"
+  },
+  {
+    "id": "gen_008",
+    "question": "Ik wil mijn bestelling annuleren en het gehele bedrag terugkrijgen, hoe werkt dat?",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Refund request"
+  },
+  {
+    "id": "gen_009",
+    "question": "Kan ik mijn aankoop retourneren en het bedrag binnen 14 dagen terugkrijgen?",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Refund request"
+  },
+  {
+    "id": "gen_010",
+    "question": "Ik heb mijn smartphone al ontvangen, is het nog mogelijk om het bedrag terug te vragen?",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Refund request"
+  },
+  {
+    "id": "gen_011",
+    "question": "Heb ik nog tijd om mijn bestelling te retourneren en het geld weer te krijgen?",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Refund request"
+  },
+  {
+    "id": "gen_012",
+    "question": "Waarom is mijn betaling via Mastercard niet goed verwerkt?",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Billing inquiry"
+  },
+  {
+    "id": "gen_013",
+    "question": "Heb ik het juiste bedrag betaald voor mijn laptop?",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Billing inquiry"
+  },
+  {
+    "id": "gen_014",
+    "question": "Hoe kan ik mijn aankoop afrekenen zonder gebruik te maken van een creditcard?",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Billing inquiry"
+  },
+  {
+    "id": "gen_015",
+    "question": "Is het bedrag dat ik moet betalen voor de smartphone correct?",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Billing inquiry"
+  },
+  {
+    "id": "gen_016",
+    "question": "Wat moet ik doen als mijn afrekening via PayPal niet goed is gegaan?",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Billing inquiry"
+  },
+  {
+    "id": "gen_017",
+    "question": "Hoe kan ik mijn betaalde bedrag terugsturen of aanpassen?",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Billing inquiry"
+  },
+  {
+    "id": "gen_018",
+    "question": "Kan ik mijn bestelling van de Samsung Galaxy S23 canceleren?",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Cancellation request"
+  },
+  {
+    "id": "gen_019",
+    "question": "Wanneer is het mogelijk om een bestelling te annuleren?",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Cancellation request"
+  },
+  {
+    "id": "gen_020",
+    "question": "Hoe kan ik mijn bestelling van de Sony Bravia TV annuleren?",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Cancellation request"
+  },
+  {
+    "id": "gen_021",
+    "question": "Is het mogelijk om een bestelling te stoppen nadat het al is geplaatst?",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Cancellation request"
+  },
+  {
+    "id": "gen_022",
+    "question": "Moet ik contact opnemen met de klantenservice om mijn bestelling te annuleren?",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Cancellation request"
+  },
+  {
+    "id": "gen_023",
+    "question": "Kan ik mijn bestelling van de Nintendo Switch nog annuleren?",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Cancellation request"
+  },
+  {
+    "id": "gen_024",
+    "question": "Wanneer kan ik mijn bestelling verwachten?",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Product inquiry"
+  },
+  {
+    "id": "gen_025",
+    "question": "Heb ik een garantie op deze laptop?",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Product inquiry"
+  },
+  {
+    "id": "gen_026",
+    "question": "Kan ik de bestelling annuleren voordat het gestuurd wordt?",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Product inquiry"
+  },
+  {
+    "id": "gen_027",
+    "question": "Hoe lang duurt de levering naar België?",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Product inquiry"
+  },
+  {
+    "id": "gen_028",
+    "question": "Is de productbeschrijving precies zoals op de foto?",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Product inquiry"
+  },
+  {
+    "id": "gen_029",
+    "question": "Kan ik een andere leveroptie kiezen?",
+    "gen_model": "qwen3:8b",
+    "intended_bucket": "Product inquiry"
+  },
+  {
+    "id": "gen_030",
+    "question": "Ik heb de laptop gekocht op Expertum en hij werkt niet meer goed, de batterij lekt,",
+    "gen_model": "gemma3:1b",
+    "intended_bucket": "Technical issue"
+  },
+  {
+    "id": "gen_031",
+    "question": "Hoe kan ik mijn betaalde aankoop bedragen terugkrijgen?",
+    "gen_model": "gemma3:1b",
+    "intended_bucket": "Refund request"
+  },
+  {
+    "id": "gen_032",
+    "question": "Ik heb de ordernummers, maar ik weet niet hoe ik het terugkrijg.",
+    "gen_model": "gemma3:1b",
+    "intended_bucket": "Refund request"
+  },
+  {
+    "id": "gen_033",
+    "question": "Ik heb een probleem met de betaling. Kan ik mijn geld terug krijgen?",
+    "gen_model": "gemma3:1b",
+    "intended_bucket": "Refund request"
+  },
+  {
+    "id": "gen_034",
+    "question": "Wat is de procedure voor het terugkrijgen van mijn betaling?",
+    "gen_model": "gemma3:1b",
+    "intended_bucket": "Refund request"
+  },
+  {
+    "id": "gen_035",
+    "question": "Ik wil graag weten hoe ik mijn aankoop kan annuleren en mijn geld terugkrijg.",
+    "gen_model": "gemma3:1b",
+    "intended_bucket": "Refund request"
+  },
+  {
+    "id": "gen_036",
+    "question": "Ik heb een vraag over de garantievoorwaarden voor dit product.",
+    "gen_model": "gemma3:1b",
+    "intended_bucket": "Refund request"
+  },
+  {
+    "id": "gen_037",
+    "question": "Ik heb een probleem met mijn betaling bij Expertum. Het bedrag is niet correct weergegeven.",
+    "gen_model": "gemma3:1b",
+    "intended_bucket": "Billing inquiry"
+  },
+  {
+    "id": "gen_038",
+    "question": "Kan ik mijn order bijhouden? Ik heb een aantal vragen over de status.",
+    "gen_model": "gemma3:1b",
+    "intended_bucket": "Billing inquiry"
+  },
+  {
+    "id": "gen_039",
+    "question": "Ik zie een ongeldig bedrag op mijn rekening. Wat moet ik doen?",
+    "gen_model": "gemma3:1b",
+    "intended_bucket": "Billing inquiry"
+  },
+  {
+    "id": "gen_040",
+    "question": "Ik heb een product besteld, maar ik kan het niet afleveren. Kan ik dat veranderen?",
+    "gen_model": "gemma3:1b",
+    "intended_bucket": "Billing inquiry"
+  },
+  {
+    "id": "gen_041",
+    "question": "Ik wil graag mijn account aanpassen. Ik heb een paar vragen over mijn persoonlijke gegevens.",
+    "gen_model": "gemma3:1b",
+    "intended_bucket": "Billing inquiry"
+  },
+  {
+    "id": "gen_042",
+    "question": "Ik heb een bestelling die ik niet kan annuleren.  Hoe werkt dat?",
+    "gen_model": "gemma3:1b",
+    "intended_bucket": "Billing inquiry"
+  },
+  {
+    "id": "gen_043",
+    "question": "Ik wilde de bestelling annuleren voor de laptop XYZ, maar het is niet mogelijk.",
+    "gen_model": "gemma3:1b",
+    "intended_bucket": "Cancellation request"
+  },
+  {
+    "id": "gen_044",
+    "question": "Ik heb een televisielamp aangeschaft, maar ik wil deze graag terug.",
+    "gen_model": "gemma3:1b",
+    "intended_bucket": "Cancellation request"
+  },
+  {
+    "id": "gen_045",
+    "question": "Ik bestelde een smartphone, maar ik ben niet tevreden over de software.",
+    "gen_model": "gemma3:1b",
+    "intended_bucket": "Cancellation request"
+  },
+  {
+    "id": "gen_046",
+    "question": "Ik heb een PlayStation 5 besteld, maar ik heb geen zin om hem te gebruiken.",
+    "gen_model": "gemma3:1b",
+    "intended_bucket": "Cancellation request"
+  },
+  {
+    "id": "gen_047",
+    "question": "Ik wil mijn camera bestellen stoppen, maar de bestelstatus is onduidelijk.",
+    "gen_model": "gemma3:1b",
+    "intended_bucket": "Cancellation request"
+  },
+  {
+    "id": "gen_048",
+    "question": "Ik heb een gaming-tafel aangeschaft, maar ik ben niet blij met de levering.",
+    "gen_model": "gemma3:1b",
+    "intended_bucket": "Cancellation request"
+  },
+  {
+    "id": "gen_049",
+    "question": "Ik heb mijn nieuwe laptop gekocht, maar er zit een groot gaatje onderaan het scherm en ik kan niets zien.",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Technical issue"
+  },
+  {
+    "id": "gen_050",
+    "question": "Waarom doet mijn nieuw gekochte televisie geen geluid meer?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Technical issue"
+  },
+  {
+    "id": "gen_051",
+    "question": "Mijn camera geeft aan dat de lens defect is, maar ik was de vorige dag nog wel foto's gemaakt met hem...",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Technical issue"
+  },
+  {
+    "id": "gen_052",
+    "question": "Ik had een garantie op mijn smartphone, maar nu het niet meer werkt krijg ik te horen dat die al verlopen is.",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Technical issue"
+  },
+  {
+    "id": "gen_053",
+    "question": "Hoe kan ik mijn nieuw gekochte spelconsole resetten als hij plotseling in paniek raakt en alles aan de lucht zet?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Technical issue"
+  },
+  {
+    "id": "gen_054",
+    "question": "Ik had verwacht dat mijn nieuwe televisie een HDMI-poort zou hebben, maar het heeft er geen, kan ik een andere kopen om hem te vervangen?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Technical issue"
+  },
+  {
+    "id": "gen_055",
+    "question": "Mijn laptop was kapot aanbeland, maar dat wist ik niet toen ik hem aanschafte. Kan ik mijn geld terugkrijgen?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Refund request"
+  },
+  {
+    "id": "gen_056",
+    "question": "Ik heb een iPhone gekocht die niet van de laatste generatie is en nu zijn ze op voorraad. Moet ik het geld uitgeven of kun je me nog een andere keuze bieden?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Refund request"
+  },
+  {
+    "id": "gen_057",
+    "question": "Hoe kan ik als klant aanspraak maken op mijn garantie na zo'n 6 maanden?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Refund request"
+  },
+  {
+    "id": "gen_058",
+    "question": "Mijn telefoon had al gebruikerssporen, dus de garantie is waarschijnlijk afgebroken. Is dat correct?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Refund request"
+  },
+  {
+    "id": "gen_059",
+    "question": "Ik heb 2 dagen geleden een laptop besteld en gisteren kwam ik het product online niet meer vinden. Kan je mij een nieuwe leverdatum geven of hoe voorkom ik zo'n situatie in de toekomst?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Refund request"
+  },
+  {
+    "id": "gen_060",
+    "question": "Als ik mijn aankoop verder wil retourneren, wat zijn dan alle stappen die ik moet uitvoeren om dit soort zaakjes te regelen?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Refund request"
+  },
+  {
+    "id": "gen_061",
+    "question": "Het is niet goed gegaan bij de betaling, krijg ik mijn geld terug?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Billing inquiry"
+  },
+  {
+    "id": "gen_062",
+    "question": "Ik heb twee laptop luidsprekers besteld, waarom staat dat er op de factuur ook een extra luidspreker? Ik wil het anders afrekenen.",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Billing inquiry"
+  },
+  {
+    "id": "gen_063",
+    "question": "Hoe lang duurt het voordat mijn nieuwe smartphone wordt geleverd en in welke conditie moet hij aangekomen zijn?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Billing inquiry"
+  },
+  {
+    "id": "gen_064",
+    "question": "Ik wou de televisie met Dolby Vision kopen, maar de website biedt deze optie niet aan. Wat is er aan de hand?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Billing inquiry"
+  },
+  {
+    "id": "gen_065",
+    "question": "Waarom staat er een extra service-charge op mijn factuur? Zij hadden gezegd dat alles inclusief was.",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Billing inquiry"
+  },
+  {
+    "id": "gen_066",
+    "question": "Kunnen jullie me uitgebreid informeren over het restant van mijn krediet bij Expertum en hoe snel kan ik weer een aankoop doen?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Billing inquiry"
+  },
+  {
+    "id": "gen_067",
+    "question": "Mijn laptop is nog niet thuis, hoe kan ik mijn bestelling stopzetten?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Cancellation request"
+  },
+  {
+    "id": "gen_068",
+    "question": "Het spijt me dat, maar ik wilde eerst de televisie in de winkel bekijken voordat ik hem online bestelde. Kan ik hem nu maar terugsturen?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Cancellation request"
+  },
+  {
+    "id": "gen_069",
+    "question": "Kan ik aub meer informatie krijgen over het stappenplan om mijn bestelling stop te zetten?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Cancellation request"
+  },
+  {
+    "id": "gen_070",
+    "question": "Het is een week geleden dat ik een camera heb besteld, en die staat nog steeds niet thuis. Hoe kan ik mijn bestelling stopzetten?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Cancellation request"
+  },
+  {
+    "id": "gen_071",
+    "question": "Ik had zojuist een bestelling gedaan op mijn telefoon, maar nu ben ik onzeker of ik hem wel echt wil hebben. Kan ik de aankoop stopzetten voor de aflevering?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Cancellation request"
+  },
+  {
+    "id": "gen_072",
+    "question": "Het is mijn excuses, maar bij het inloggen zit mijn wachtwoord niet meer in de buurt. Hoe kan ik alsnog mijn bestelling stopzetten?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Cancellation request"
+  },
+  {
+    "id": "gen_073",
+    "question": "Ik heb mijn laptop besteld op woensdag, maar nu is het al donderdag en ik zie nog steeds geen tracking informatie. Waarom?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Product inquiry"
+  },
+  {
+    "id": "gen_074",
+    "question": "Kan ik een retour maken van mijn smartphone als de batterij al binnen 2 maanden minder gaat dan verwacht?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Product inquiry"
+  },
+  {
+    "id": "gen_075",
+    "question": "Hoe kan ik mijn televisie terugsturen als er bij levering een stukje ontbrekt aan de oplader?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Product inquiry"
+  },
+  {
+    "id": "gen_076",
+    "question": "Zijn de garantietijd en het herstelproces voor een camera hetzelfde als voor laptops?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Product inquiry"
+  },
+  {
+    "id": "gen_077",
+    "question": "Ik heb een gamingconsole besteld, maar hij is niet meteen uitgeleverd. Hoe lang duurt het voordat ik mijn console zal ontvangen?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Product inquiry"
+  },
+  {
+    "id": "gen_078",
+    "question": "Kan ik op korte termijn een vervangend deeltje bestellen voor mijn laptop (zoals een usb-poort)?",
+    "gen_model": "llama3.1:8b",
+    "intended_bucket": "Product inquiry"
+  }
+]
