@@ -38,19 +38,13 @@ De normalisatie past de vervangingen na elkaar toe, dus de volgorde is belangrij
 
 Naast de regelgebaseerde routing kan het vraagtype ook door het lokale taalmodel bepaald worden. De omgevingsvariabele `RAG_ROUTER` kiest de strategie:
 
-- `keyword` (standaard): alleen de regelgebaseerde laag hierboven.
-- `llm`: het lokale model (`llama3.1:8b`) deelt de vraag zero-shot in een van de vijf ticket-types in; faalt dat of geeft het een ongeldig antwoord, dan valt het systeem terug op de regelgebaseerde laag.
-- `hybrid`: eerst de regels, en alleen als die niets herkennen het LLM.
+- `keyword` (standaard): alleen de regelgebaseerde laag. Geen modelcall (enkele microseconden per vraag), ~67% op de vastgehouden set.
+- `llm`: het lokale model (`llama3.1:8b`) classificeert elke vraag zero-shot; faalt dat, dan valt het terug op de regels. Hoogste accuratesse (~94%, want het model overschrijft ook foute regeltreffers), maar een modelcall per vraag (~1 s).
+- `hybrid`: eerst de regels, en alleen bij geen treffer het model. De regels vuren op ~76% van de vragen, dus het model wordt maar in ongeveer 1 op de 4 gevallen aangeroepen. Accuratesse ~89%: tussen beide in, omdat een foute regeltreffer hier niet meer overschreven wordt.
 
-De classificatie gebruikt een aparte JSON-prompt (`format="json"`, temperatuur 0) met neutrale categorieomschrijvingen, los van de antwoordprompt. De keuze tussen de strategieen staat in `_route_ticket_type`; de regelgebaseerde laag blijft in elke modus de terugval, zodat een uitval van Ollama de routing niet breekt.
+De classificatie gebruikt een aparte JSON-prompt (`format="json"`, temperatuur 0), los van de antwoordprompt; de dispatch staat in `_route_ticket_type`. De antwoordgeneratie is in alle drie de modi identiek, dus het snelheidsverschil zit alleen in die extra classificatiecall.
 
-`keyword` blijft bewust de standaard:
-
-- **Determinisme:** dezelfde vraag levert altijd dezelfde route op, wat reproduceerbare evaluatie en regressietests mogelijk maakt.
-- **Geen extra modelcall:** de regels draaien lokaal zonder LLM-aanroep, dus zonder extra latency of geheugengebruik per vraag.
-- **Terugval:** is het LLM niet bereikbaar of geeft het ongeldige JSON terug, dan degradeert het systeem netjes naar de regels.
-
-In een interne vergelijking op dezelfde onafhankelijk gelabelde, vastgehouden set deelde de LLM-routing duidelijk meer vragen correct in dan de regels (ongeveer 94% tegenover 67% op de overeenstemmende set). Dat cijfer is indicatief: een taalmodel beoordeelt hier vragen die een ander taalmodel heeft gelabeld, dus de absolute marge moet voorzichtig gelezen worden. De reproduceerbare, ingecheckte meting van de regelgebaseerde routing staat in `docs/eval_routing_accuracy.md`.
+`keyword` blijft bewust de standaard: deterministisch, geen extra modelcall, en in elke modus de terugval zodat een uitval van Ollama de routing niet breekt. Het ~94%-cijfer is indicatief, want een taalmodel beoordeelt hier vragen die een ander taalmodel heeft gelabeld; de reproduceerbare meting van de regelgebaseerde routing staat in `docs/eval_routing_accuracy.md`.
 
 ## Tweede databron: producthandleidingen
 
