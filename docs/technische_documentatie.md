@@ -80,6 +80,14 @@ De prompt bevat regels om klantgerichte antwoorden te verbeteren:
 - Bij escalatie verwijst de assistent naar een menselijke Expertum support agent.
 - Automatische vertalingen tussen haakjes worden verwijderd uit het antwoord.
 
+## Prestaties
+
+Gemeten op de referentiehardware (laptop met een NVIDIA RTX 4060, 8 GB VRAM), waarbij `llama3.1:8b` volledig op de GPU past:
+
+- Een typisch antwoord (80 tot 120 woorden) duurt warm ~13 s; de eerste vraag na inactiviteit ~22 s, inclusief het laden van het model in het VRAM.
+- De tijd zit vrijwel volledig in de tekstgeneratie (~6 tot 8 woorden per seconde). Het embedden van de vraag en het ophalen uit Chroma kost samen ~55 ms, dus de retrieval is verwaarloosbaar en de routingstrategie verandert de totaaltijd nauwelijks.
+- Zonder GPU valt Ollama terug op de CPU en worden deze tijden merkbaar hoger.
+
 ## Evaluatiemodus
 
 Voor het onderzoek is een evaluatiescript toegevoegd:
