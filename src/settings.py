@@ -6,8 +6,9 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 RAW_DATA_DIR = ROOT_DIR / "data" / "raw"
 RAW_MANUALS_DIR = ROOT_DIR / "data" / "manuals" / "raw"
 PROCESSED_DATA_DIR = ROOT_DIR / "data" / "processed"
-CHROMA_DIR = ROOT_DIR / "data" / "chroma_db"
-CHROMA_MANUALS_DIR = ROOT_DIR / "data" / "chroma_manuals"
+# Env-overridable so an alternate embedding index can be built beside the default.
+CHROMA_DIR = Path(os.environ.get("RAG_CHROMA_DIR", str(ROOT_DIR / "data" / "chroma_db")))
+CHROMA_MANUALS_DIR = Path(os.environ.get("RAG_CHROMA_MANUALS_DIR", str(ROOT_DIR / "data" / "chroma_manuals")))
 
 DEFAULT_LLM_MODEL = os.environ.get("RAG_LLM_MODEL", "llama3.1:8b")
 DEFAULT_EMBEDDING_MODEL = os.environ.get("RAG_EMBEDDING_MODEL", "nomic-embed-text")
@@ -16,13 +17,10 @@ MANUALS_COLLECTION = "product_manuals"
 
 
 def _resolve_ollama_base_url() -> str | None:
-    """Resolve the Ollama server URL from the environment.
+    """Resolve the Ollama base URL from env, or None to use langchain's default.
 
-    Returns None when nothing is configured, so langchain-ollama falls back to
-    its own default (http://localhost:11434). On WSL2 with mirrored networking
-    that default already reaches an Ollama server running on Windows. When WSL2
-    uses NAT networking instead, set OLLAMA_BASE_URL (or OLLAMA_HOST) to the
-    Windows host, e.g. http://<windows-ip>:11434.
+    On WSL2 with mirrored networking the default localhost:11434 reaches Ollama
+    on Windows; with NAT networking set OLLAMA_BASE_URL/OLLAMA_HOST to the host.
     """
     base = os.environ.get("OLLAMA_BASE_URL")
     if base:
@@ -33,8 +31,7 @@ def _resolve_ollama_base_url() -> str | None:
         host = host.strip()
         if host.startswith("http://") or host.startswith("https://"):
             return host
-        # OLLAMA_HOST is usually host:port (e.g. "0.0.0.0:11434"); a 0.0.0.0
-        # bind address is not connectable, so normalise it to loopback.
+        # 0.0.0.0 is a bind address, not connectable; normalise to loopback.
         host = host.replace("0.0.0.0", "127.0.0.1")
         return f"http://{host}"
 
@@ -43,9 +40,19 @@ def _resolve_ollama_base_url() -> str | None:
 
 OLLAMA_BASE_URL = _resolve_ollama_base_url()
 
-# llama3.1:8b advertises a 128k-token context window. Letting Ollama allocate
-# the KV cache for the full window needs ~20 GiB of RAM and OOMs on a typical
-# 16-32 GiB machine. Bound the context explicitly so the model fits; 8192 is
-# ample for the RAG prompt (system + retrieved docs + question + answer).
+# Cap the context window: llama3.1:8b's 128k default KV cache needs ~20 GiB and
+# OOMs; 8192 fits and is ample for the RAG prompt.
 LLM_NUM_CTX = int(os.environ.get("RAG_LLM_NUM_CTX", "8192"))
 LLM_TEMPERATURE = float(os.environ.get("RAG_LLM_TEMPERATURE", "0.0"))
+
+# Ticket-type routing strategy (RAG_ROUTER), picking the Chroma metadata filter:
+# keyword = rule layer (default, deterministic); llm = zero-shot classification;
+# hybrid = keyword then llm. See _route_ticket_type for the dispatch.
+ROUTER_MODE = os.environ.get("RAG_ROUTER", "keyword").strip().lower()
+if ROUTER_MODE not in {"keyword", "llm", "hybrid"}:
+    ROUTER_MODE = "keyword"
+
+# keep_alive override for Ollama clients (None = default ~5m residency). Set
+# RAG_OLLAMA_KEEP_ALIVE=0 on small GPUs to unload between calls and avoid VRAM
+# overcommit, which can corrupt embeddings to NaN under memory pressure.
+OLLAMA_KEEP_ALIVE = os.environ.get("RAG_OLLAMA_KEEP_ALIVE") or None

@@ -24,7 +24,7 @@ Voor technische vragen verwachten we dat handleidingen of hybrid beter scoren, o
 
 Voor refund-, billing-, cancellation- en deliveryvragen verwachten we dat tickets beter scoren, omdat handleidingen weinig informatie bevatten over supportprocessen.
 
-Voor Nederlandse vragen verwachten we mogelijk lagere retrievalkwaliteit, omdat de dataset en handleidingen vooral Engelstalig zijn. De applicatie bevat wel beperkte query-normalisatie om dit te verbeteren.
+Voor Nederlandse vragen verwachten we mogelijk lagere retrievalkwaliteit, omdat de dataset en handleidingen vooral Engelstalig zijn. De applicatie bevat hiervoor een regelgebaseerde routing- en normalisatielaag die het vraagtype bepaalt en Nederlandse probleemzinnen omzet naar Engelse zoektermen. Op de officiele evaluatiecases blijft de routing gelijk (temperatuur 0), terwijl realistische Nederlandse formuleringen die buiten deze set vallen er duidelijk op vooruitgaan.
 
 ## Scoringsrubriek
 

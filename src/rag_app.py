@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 
 from langchain_chroma import Chroma
@@ -11,11 +12,18 @@ from load_data import load_ticket_dataframe
 from settings import CHROMA_DIR, DEFAULT_COLLECTION, DEFAULT_EMBEDDING_MODEL, DEFAULT_LLM_MODEL
 from settings import CHROMA_MANUALS_DIR, MANUALS_COLLECTION
 from settings import LLM_NUM_CTX, LLM_TEMPERATURE, OLLAMA_BASE_URL
+from settings import OLLAMA_KEEP_ALIVE
+from settings import ROUTER_MODE
 
 
 def _ollama_kwargs() -> dict:
-    """Shared connection kwargs for Ollama clients (base_url when configured)."""
-    return {"base_url": OLLAMA_BASE_URL} if OLLAMA_BASE_URL else {}
+    """Shared connection kwargs for Ollama clients (base_url + keep_alive)."""
+    kwargs: dict = {}
+    if OLLAMA_BASE_URL:
+        kwargs["base_url"] = OLLAMA_BASE_URL
+    if OLLAMA_KEEP_ALIVE is not None:
+        kwargs["keep_alive"] = OLLAMA_KEEP_ALIVE
+    return kwargs
 
 
 def _make_llm() -> ChatOllama:
@@ -177,12 +185,45 @@ def _search_query(question: str) -> str:
         "verkeerde": "wrong",
         "verzonden": "shipped",
         "geleverd": "delivered",
+        # Multi-word phrases before their substrings: bare "retour"->"return"
+        # would otherwise fire inside "geld retour".
+        "staat als bezorgd": "marked as delivered",
+        "nooit ontvangen": "never received",
+        "niet ontvangen": "not received",
+        "geld retour": "refund",
+        "trackingnummer": "tracking number",
+        "bezorgd": "delivered",
+        "pakket": "package",
+        "zending": "shipment",
         "retour melden": "report return",
         "retour": "return",
         "terug sturen": "return",
         "terugsturen": "return",
         "terugbetaling": "refund",
         "probleem": "problem issue",
+        # Billing vocabulary (specific multi-word phrases before their substrings).
+        "twee keer aangerekend": "charged twice",
+        "dubbel aangerekend": "charged twice",
+        "dubbele afschrijving": "double charge",
+        "dubbel afgeschreven": "double charged",
+        "aangerekend": "charged",
+        "afschrijving": "charge",
+        "afgeschreven": "charged",
+        "gefactureerd": "invoiced",
+        "factuur": "invoice",
+        "betaling": "payment",
+        "afzeggen": "cancel",
+        "intrekken": "cancel",
+        # order-stop and malfunction/refund verb variants (mirror _detect_ticket_type)
+        "stopzetten": "cancel",
+        "afbestellen": "cancel",
+        "terugvragen": "refund",
+        "defect": "defective",
+        "stukgegaan": "broken",
+        "kapot": "broken",
+        "geen geluid": "no sound",
+        "hapert": "stutters glitchy",
+        "crasht": "crashes",
     }
     query = question.lower()
     for dutch, english in replacements.items():
@@ -226,6 +267,21 @@ def _looks_like_technical_issue(question: str) -> bool:
         "wifi",
         "batterij",
         "verbindt niet",
+        # Generic "broken product" phrasings; reached only after billing/refund/
+        # cancel/logistics are ruled out, so "betaling werkt niet" routes earlier.
+        "defect",
+        "kapot",
+        "stukgegaan",
+        "geen geluid",
+        "geen beeld",
+        "doet het niet",
+        "doet niet",
+        "doen niet",
+        "werkt onverwacht",
+        "hapert",
+        "crasht",
+        "beeldkwaliteit",
+        "glitch",
     ]
     return any(phrase in normalized for phrase in technical_phrases)
 
@@ -234,23 +290,120 @@ def _detect_ticket_type(question: str) -> str | None:
     normalized = _normalize(question)
     if any(
         word in normalized
-        for word in ["refund", "reimburse", "money back", "terugbetaling", "geld terug"]
+        for word in [
+            "refund", "reimburse", "money back",
+            "terugbetaling", "terugbetalen", "geld terug", "geld retour",
+            "restitutie", "terugstorten",
+            "terugvragen", "geld terugkrijgen", "bedrag terugkrijgen",
+            "bedrag terug", "geld weer terug",
+        ]
     ):
         return "Refund request"
     if any(
         word in normalized
-        for word in ["cancel", "cancellation", "annuleren", "annuleer", "per ongeluk besteld", "wrong order"]
+        for word in [
+            "cancel", "cancellation", "wrong order",
+            "annuleren", "annuleer", "annulering", "per ongeluk besteld",
+            "afzeggen", "intrekken",
+            # order-stop synonyms, before the delivery fallback so "stopzetten" reads as cancel
+            "stopzetten", "stop zetten", "stopgezet", "afbestellen",
+            "annulatie", "bestelling stoppen", "bestelling te stoppen", "order stoppen",
+        ]
     ):
         return "Cancellation request"
-    if any(word in normalized for word in ["bill", "billing", "charged", "invoice", "factuur"]):
+    if any(
+        word in normalized
+        for word in [
+            "bill", "billing", "charged", "invoice", "double charge",
+            "factuur", "gefactureerd", "betaling", "betaald", "aangerekend",
+            "afschrijving", "afgeschreven", "dubbel betaald", "twee keer betaald",
+        ]
+    ):
         return "Billing inquiry"
+    # Logistics nouns route to delivery before the technical check (so
+    # "trackingnummer werkt niet" isn't grabbed as technical). "geleverd"/"bezorgd"
+    # are excluded -- they co-occur with faults -- and stay in the delivery list below.
+    if any(
+        word in normalized
+        for word in [
+            "pakket", "pakketje", "zending", "verzending",
+            "trackingnummer", "tracking", "track and trace",
+            "package", "parcel", "shipment", "tracking number",
+        ]
+    ):
+        return "Product inquiry"
     if _looks_like_technical_issue(question):
         return "Technical issue"
-    if any(word in normalized for word in ["order", "delivery", "shipping", "arrived", "bestelling", "levering"]):
+    if any(
+        word in normalized
+        for word in [
+            "order", "delivery", "shipping", "shipped", "arrived", "delivered", "received",
+            "bestelling", "levering", "bezorgd", "bezorging",
+            "geleverd", "afgeleverd", "ontvangen",
+        ]
+    ):
         return "Product inquiry"
     if "technical" in normalized or "problem" in normalized or "issue" in normalized or "broken" in normalized:
         return "Technical issue"
     return None
+
+
+# Optional LLM-based routing (selected by settings.ROUTER_MODE). Bucket
+# definitions use plain business terms, not router keywords, and the five labels
+# are exactly the ticket_type values the rest of the pipeline expects.
+_ROUTER_BUCKETS = {
+    "Technical issue": "het product werkt niet, is defect of doet iets onverwachts",
+    "Refund request": "de klant wil betaald geld terugkrijgen",
+    "Billing inquiry": "een vraag of probleem over betaling, bedrag of afrekening",
+    "Cancellation request": "de klant wil een bestelling stopzetten of annuleren",
+    "Product inquiry": "een vraag over de levering van een bestelling of over een product zelf",
+}
+_ROUTER_VALID = set(_ROUTER_BUCKETS)
+_ROUTER_SYSTEM = (
+    "Je bent een classificatiemodel voor de klantenservice van een Belgische "
+    "elektronicawinkel. Deel de klantvraag in precies EEN categorie in:\n"
+    + "\n".join(f'- "{name}": {desc}' for name, desc in _ROUTER_BUCKETS.items())
+    + '\n\nAntwoord uitsluitend als JSON: '
+    '{"categorie": "<exact een van de categorienamen hierboven>"}.'
+)
+
+_router_llm = None
+
+
+def _get_router_llm() -> ChatOllama:
+    """Lazily build a JSON-mode router LLM, reusing the answering model."""
+    global _router_llm
+    if _router_llm is None:
+        _router_llm = ChatOllama(
+            model=DEFAULT_LLM_MODEL,
+            temperature=0.0,
+            num_ctx=LLM_NUM_CTX,
+            format="json",
+            **_ollama_kwargs(),
+        )
+    return _router_llm
+
+
+def _llm_detect_ticket_type(question: str) -> str | None:
+    """Zero-shot classify the question into one ticket_type, or None on failure."""
+    try:
+        content = _get_router_llm().invoke(
+            [("system", _ROUTER_SYSTEM), ("human", question)]
+        ).content
+        category = json.loads(content).get("categorie")
+    except Exception:
+        return None
+    return category if category in _ROUTER_VALID else None
+
+
+def _route_ticket_type(question: str) -> str | None:
+    """Dispatch to the ROUTER_MODE strategy; the keyword rule layer is always the
+    fallback, so an Ollama outage degrades gracefully."""
+    if ROUTER_MODE == "llm":
+        return _llm_detect_ticket_type(question) or _detect_ticket_type(question)
+    if ROUTER_MODE == "hybrid":
+        return _detect_ticket_type(question) or _llm_detect_ticket_type(question)
+    return _detect_ticket_type(question)
 
 
 def _extract_known_facts(question: str, product: str | None, ticket_type: str | None) -> str:
@@ -282,10 +435,18 @@ def _extract_known_facts(question: str, product: str | None, ticket_type: str | 
         facts.append("Customer is asking whether this should be handled as a technical issue or a return.")
     if any(phrase in normalized for phrase in ["accidental", "per ongeluk", "wrong", "verkeerde"]):
         facts.append("Customer already gave the reason: accidental or wrong order/product.")
-    if any(phrase in normalized for phrase in ["charged twice", "twee keer aangerekend", "dubbel aangerekend"]):
-        facts.append("Customer already stated they were charged twice.")
-    if any(phrase in normalized for phrase in ["marked as delivered", "staat als geleverd"]):
+    if any(
+        phrase in normalized
+        for phrase in [
+            "charged twice", "double charge", "twee keer aangerekend",
+            "dubbel aangerekend", "dubbele afschrijving", "dubbel afgeschreven",
+        ]
+    ):
+        facts.append("Customer already stated there is a duplicate charge or double debit.")
+    if any(phrase in normalized for phrase in ["marked as delivered", "staat als geleverd", "staat als bezorgd"]):
         facts.append("Customer already stated the package is marked as delivered.")
+    if any(phrase in normalized for phrase in ["never received", "nooit ontvangen", "niet ontvangen"]):
+        facts.append("Customer already stated the package was never received.")
 
     if not facts:
         return "No specific known facts extracted. Avoid repeating obvious details from the question."
@@ -405,7 +566,7 @@ def answer_question(question: str, k: int = 4, source_mode: str = "hybrid") -> t
 
     search_query = _search_query(question)
     product = _detect_product(question)
-    ticket_type = _detect_ticket_type(question)
+    ticket_type = _route_ticket_type(question)
     known_facts = _extract_known_facts(question, product, ticket_type)
 
     docs = []
