@@ -26,11 +26,19 @@ We hebben twee zwaardere alternatieven getest en bewust niet overgenomen. Automa
 
 Het effect van de routinglaag is gemeten met een before/after-test waarin alleen de routing verschilt en alle andere stappen identiek blijven (zelfde embedding, temperatuur 0, modus `tickets`). Op de twaalf officiele evaluatiecases verandert de routing niet: die vragen gebruiken woorden die de oude routing ook al correct herkende (zoals `geld terug`, `annuleren` en sterke technische signalen). Bij temperatuur 0 leidt gelijke routing tot exact hetzelfde antwoord, dus daar is geen regressie en blijft de score 12 op 12. De officiele set kan deze fix dus per definitie niet meten.
 
-Om de winst objectief en zonder eigen oordeel te meten, hebben we de testvragen door andere taalmodellen laten schrijven en door weer een ander model laten indelen in een categorie. Die onafhankelijke indeling geldt als referentie, niet onze eigen beoordeling. De vragen waarop we de routing uiteindelijk beoordelen, zijn bovendien pas gegenereerd nadat de regels al vastlagen, zodat we toetsen of de aanpak ook werkt op formuleringen die we zelf nooit gezien hebben. Op die vastgehouden set koos de routing duidelijk vaker de juiste categorie: ongeveer twee op de drie vragen tegenover iets meer dan een op de drie vóór dit werk (67% tegenover 39% van de vragen waarover twee modellen het eens waren), en geen enkele vraag werd slechter ingedeeld. De vooruitgang zit precies bij de vraagtypes die we wilden opvangen, namelijk billing, annuleringen, refunds en technische klachten zonder duidelijk trefwoord, terwijl de algemenere productvragen gelijk bleven.
+Om te controleren of de uitbreiding echt helpt, hebben we een reeks realistische Nederlandse formuleringen getest die de oude routing nog niet kende. Vóór de uitbreiding misten deze woorden in de regels, waardoor de vraag vaak in de verkeerde categorie of in `Unknown` belandde; nu worden ze correct herkend. Enkele voorbeelden:
 
-De absolute score blijft beperkt: de regelgebaseerde laag herkent nog niet elke Nederlandse formulering, en de testvragen zijn door modellen bedacht en niet afkomstig van echte Belgische klanten. De meting toont vooral dat de uitbreiding netto vooruitgang geeft zonder achteruitgang, niet dat het probleem volledig is opgelost. De volledige cijfers en de methode staan in `docs/eval_routing_accuracy.md`.
+| Nederlandse formulering | Gekozen categorie |
+|---|---|
+| `Er staat een dubbele afschrijving op mijn rekening` | Billing inquiry |
+| `Ik wil mijn bestelling stopzetten` | Cancellation request |
+| `Kan ik mijn geld retour krijgen?` | Refund request |
+| `Mijn pakket staat als bezorgd maar ik heb het nooit ontvangen` | Product inquiry |
+| `Het toestel is kapot en geeft geen geluid` | Technical issue |
 
-Naast de regelgebaseerde routing bevat de proof-of-concept een optionele LLM-routing (omgevingsvariabele `RAG_ROUTER=llm` of `hybrid`), waarbij het lokale model het vraagtype zelf classificeert. In een interne vergelijking op dezelfde vastgehouden set koos die variant nog vaker de juiste categorie (rond 94% tegenover 67% voor de regels), maar dat cijfer is indicatief omdat een taalmodel hier vragen beoordeelt die een ander taalmodel heeft gelabeld. De regelgebaseerde routing blijft bewust de standaard: ze is deterministisch, vraagt geen extra modelcall per vraag en dient als terugval wanneer het LLM niet bereikbaar is. De LLM-routing is dus een opt-in verbetering en niet de basis.
+De winst zit precies bij de vraagtypes die we wilden opvangen: billing, annuleringen, refunds en technische klachten zonder een duidelijk trefwoord. Geen enkele bestaande testcase werd slechter ingedeeld; de algemenere productvragen bleven gelijk. Welke woorden naar welke categorie leiden, is rechtstreeks na te lezen in de routingregels (`_detect_ticket_type` in `src/rag_app.py`) en vastgelegd met regressietests in `tests/test_dutch_routing.py`.
+
+De dekking blijft beperkt: de regelgebaseerde laag herkent nog niet elke Nederlandse formulering, en de testzinnen zijn door onszelf bedacht en niet afkomstig van echte Belgische klanten. De controle laat vooral zien dat de uitbreiding vooruitgang geeft zonder achteruitgang, niet dat het probleem volledig is opgelost.
 
 Nederlandse vragen blijven belangrijk voor de evaluatie, omdat Expertum in een Belgische context werkt. Daarom bevat de evaluatieset zowel Engelse als Nederlandse testcases.
 
