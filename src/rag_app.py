@@ -11,6 +11,7 @@ from load_data import load_ticket_dataframe
 from settings import CHROMA_DIR, DEFAULT_COLLECTION, DEFAULT_EMBEDDING_MODEL, DEFAULT_LLM_MODEL
 from settings import CHROMA_MANUALS_DIR, MANUALS_COLLECTION
 from settings import LLM_NUM_CTX, LLM_TEMPERATURE, OLLAMA_BASE_URL
+from settings import ROUTER_MODE
 
 
 def _ollama_kwargs() -> dict:
@@ -335,6 +336,48 @@ def _detect_ticket_type(question: str) -> str | None:
     return None
 
 
+# Short description of each ticket type, used by the optional LLM router so the
+# model knows what the category names mean.
+TICKET_TYPE_DESCRIPTIONS = {
+    "Technical issue": "the product does not work, is broken, or behaves unexpectedly",
+    "Refund request": "the customer wants their money back",
+    "Billing inquiry": "a question or problem about a payment, charge, or invoice",
+    "Cancellation request": "the customer wants to stop or cancel an order",
+    "Product inquiry": "a question about the delivery of an order or about a product itself",
+}
+
+
+def _llm_detect_ticket_type(question: str) -> str | None:
+    """Ask the local model to pick one ticket type. Returns None if the model is
+    unreachable or replies with a category we do not recognise, so the caller can
+    fall back to the keyword rules."""
+    options = "\n".join(f"- {name}: {desc}" for name, desc in TICKET_TYPE_DESCRIPTIONS.items())
+    prompt = (
+        "Classify the customer question into exactly one of these categories:\n"
+        f"{options}\n\n"
+        "Answer with only the category name, exactly as written above.\n\n"
+        f"Question: {question}"
+    )
+    try:
+        answer = _make_llm().invoke(prompt).content
+    except Exception:
+        return None
+    for name in TICKET_TYPE_DESCRIPTIONS:
+        if name.lower() in answer.lower():
+            return name
+    return None
+
+
+def _route_ticket_type(question: str) -> str | None:
+    """Pick the ticket type using the strategy in ROUTER_MODE. The keyword rules
+    are always the fallback, so the app keeps working if the model is down."""
+    if ROUTER_MODE == "llm":
+        return _llm_detect_ticket_type(question) or _detect_ticket_type(question)
+    if ROUTER_MODE == "hybrid":
+        return _detect_ticket_type(question) or _llm_detect_ticket_type(question)
+    return _detect_ticket_type(question)
+
+
 def _extract_known_facts(question: str, product: str | None, ticket_type: str | None) -> str:
     normalized = _normalize(question)
     facts: list[str] = []
@@ -483,7 +526,7 @@ def answer_question(question: str, k: int = 4, source_mode: str = "hybrid") -> t
 
     search_query = _search_query(question)
     product = _detect_product(question)
-    ticket_type = _detect_ticket_type(question)
+    ticket_type = _route_ticket_type(question)
     known_facts = _extract_known_facts(question, product, ticket_type)
 
     docs = []

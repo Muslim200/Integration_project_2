@@ -34,6 +34,16 @@ Voor de brede demo indexeren we alle tickets, zodat het systeem meerdere vraagty
 
 De normalisatie past de vervangingen na elkaar toe, dus de volgorde is belangrijk: `geld retour` wordt eerst naar `refund` omgezet voordat een losse `retour`-regel zou kunnen vuren. Deze laag is vastgelegd met regressietests in `tests/test_dutch_routing.py`.
 
+## Routering: regels of model
+
+Standaard bepaalt de regelgebaseerde laag het vraagtype (`RAG_ROUTER=keyword`). Het vraagtype kan optioneel ook door het lokale taalmodel gekozen worden:
+
+- `keyword` (standaard): alleen de keyword-regels. Snel, deterministisch en zonder extra modelcall.
+- `llm`: het model krijgt de vraag en de vijf categorieen met een korte omschrijving en antwoordt met een categorienaam; herkennen we die naam niet, dan vallen we terug op de regels.
+- `hybrid`: eerst de regels, en alleen als die niets vinden vraagt het systeem het model.
+
+De regels blijven in elke modus de terugval, zodat de routing blijft werken als het model niet bereikbaar is. De dispatch staat in `_route_ticket_type` in `src/rag_app.py`.
+
 ## Tweede databron: producthandleidingen
 
 De uitgebreide versie gebruikt naast historische supporttickets ook producthandleidingen als kennisbron.

@@ -20,6 +20,14 @@ MANUALS_COLLECTION = "product_manuals"
 LLM_TEMPERATURE = 0.0
 LLM_NUM_CTX = 8192
 
+# How the app decides the ticket type:
+#   "keyword" - use the rule-based keyword router (default)
+#   "llm"     - ask the local model to classify the question
+#   "hybrid"  - use the rules first, ask the model only if they find nothing
+ROUTER_MODE = os.environ.get("RAG_ROUTER", "keyword").strip().lower()
+if ROUTER_MODE not in {"keyword", "llm", "hybrid"}:
+    ROUTER_MODE = "keyword"
+
 
 def _resolve_ollama_base_url() -> str | None:
     """Resolve the Ollama base URL from env, or None to use langchain's default.
