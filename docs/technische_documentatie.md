@@ -34,17 +34,15 @@ Voor de brede demo indexeren we alle tickets, zodat het systeem meerdere vraagty
 
 De normalisatie past de vervangingen na elkaar toe, dus de volgorde is belangrijk: `geld retour` wordt eerst naar `refund` omgezet voordat een losse `retour`-regel zou kunnen vuren. Deze laag is vastgelegd met regressietests in `tests/test_dutch_routing.py`.
 
-## Optionele LLM-routing
+## Routering: regels of model
 
-Naast de regelgebaseerde routing kan het vraagtype ook door het lokale taalmodel bepaald worden. De omgevingsvariabele `RAG_ROUTER` kiest de strategie:
+Standaard bepaalt de regelgebaseerde laag het vraagtype (`RAG_ROUTER=keyword`). Het vraagtype kan optioneel ook door het lokale taalmodel gekozen worden:
 
-- `keyword` (standaard): alleen de regelgebaseerde laag. Geen modelcall (enkele microseconden per vraag), ~67% op de vastgehouden set.
-- `llm`: het lokale model (`llama3.1:8b`) classificeert elke vraag zero-shot; faalt dat, dan valt het terug op de regels. Hoogste accuratesse (~94%, want het model overschrijft ook foute regeltreffers), maar een modelcall per vraag (~1 s).
-- `hybrid`: eerst de regels, en alleen bij geen treffer het model. De regels vuren op ~76% van de vragen, dus het model wordt maar in ongeveer 1 op de 4 gevallen aangeroepen. Accuratesse ~89%: tussen beide in, omdat een foute regeltreffer hier niet meer overschreven wordt.
+- `keyword` (standaard): alleen de keyword-regels. Snel, deterministisch en zonder extra modelcall.
+- `llm`: het model krijgt de vraag en de vijf categorieen met een korte omschrijving en antwoordt met een categorienaam; herkennen we die naam niet, dan vallen we terug op de regels.
+- `hybrid`: eerst de regels, en alleen als die niets vinden vraagt het systeem het model.
 
-De classificatie gebruikt een aparte JSON-prompt (`format="json"`, temperatuur 0), los van de antwoordprompt; de dispatch staat in `_route_ticket_type`. De antwoordgeneratie is in alle drie de modi identiek, dus het snelheidsverschil zit alleen in die extra classificatiecall.
-
-`keyword` blijft bewust de standaard: deterministisch, geen extra modelcall, en in elke modus de terugval zodat een uitval van Ollama de routing niet breekt. Het ~94%-cijfer is indicatief, want een taalmodel beoordeelt hier vragen die een ander taalmodel heeft gelabeld; de reproduceerbare meting van de regelgebaseerde routing staat in `docs/eval_routing_accuracy.md`.
+De regels blijven in elke modus de terugval, zodat de routing blijft werken als het model niet bereikbaar is. De dispatch staat in `_route_ticket_type` in `src/rag_app.py`.
 
 ## Tweede databron: producthandleidingen
 
@@ -78,15 +76,11 @@ De prompt bevat regels om klantgerichte antwoorden te verbeteren:
 - De assistent antwoordt in dezelfde taal als de klantvraag.
 - Bij technische problemen gebruikt de assistent handleidingen als voorkeurbron voor concrete stappen.
 - Bij escalatie verwijst de assistent naar een menselijke Expertum support agent.
-- Automatische vertalingen tussen haakjes worden verwijderd uit het antwoord.
+- De assistent voegt geen automatische vertaling tussen haakjes toe aan het antwoord.
 
 ## Prestaties
 
-Gemeten op de referentiehardware (laptop met een NVIDIA RTX 4060, 8 GB VRAM), waarbij `llama3.1:8b` volledig op de GPU past:
-
-- Een typisch antwoord (80 tot 120 woorden) duurt warm ~13 s; de eerste vraag na inactiviteit ~22 s, inclusief het laden van het model in het VRAM.
-- De tijd zit vrijwel volledig in de tekstgeneratie (~6 tot 8 woorden per seconde). Het embedden van de vraag en het ophalen uit Chroma kost samen ~55 ms, dus de retrieval is verwaarloosbaar en de routingstrategie verandert de totaaltijd nauwelijks.
-- Zonder GPU valt Ollama terug op de CPU en worden deze tijden merkbaar hoger.
+Op een gewone laptop duurt een antwoord ongeveer 15 tot 20 seconden. Die tijd zit vrijwel volledig in het lokale taalmodel dat het antwoord schrijft; het embedden van de vraag en het zoeken in Chroma kosten samen maar een fractie van een seconde. Met een GPU is het sneller dan met alleen een CPU.
 
 ## Evaluatiemodus
 
